@@ -63,7 +63,9 @@ var service = {
           }.bind(this)));
 
         } else {
-          callback();
+          if ( callback ) {
+            callback();
+          }
           resolve();
         }
       } else {
@@ -72,8 +74,8 @@ var service = {
 
         if ( callback ) {
           callback();
-          resolve();
         }
+        resolve();
       }
     }.bind(this));
   }
