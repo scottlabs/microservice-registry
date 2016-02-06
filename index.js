@@ -42,7 +42,6 @@ var service = {
     discover.advertise(_.extend({ name: this.name }, this.options));
   },
   register: function(name, options) {
-    console.log('======= register', name);
     if ( ! name ) {
       throw "Provide arguments for register";
     }
@@ -64,10 +63,8 @@ var service = {
   },
 
   ready: function(callback) {
-    console.log('======= ready');
     return new Promise(function(resolve, reject) {
       function broadcastReady() {
-        console.log('this', this);
         this.options.available = true;
         this.advertise();
         if ( callback ) {
@@ -81,13 +78,11 @@ var service = {
       }.bind(this));
 
       if ( services_missing.length === 0 ) {
-        console.log('services missing, none!');
-        broadcastReady();
+        broadcastReady.call(this);
       } else {
         this.services_missing = services_missing;
         this.readyCallback = function() {
-          console.log('ready callback');
-          broadcastReady();
+          broadcastReady.call(this);
         }
       }
     }.bind(this));
