@@ -36,11 +36,13 @@ var service = {
   expected_services: {},
   callbacks: {},
   services_missing: [],
+  options: {},
   readyCallback: function() {},
   advertise: function() {
     discover.advertise(_.extend({ name: this.name }, this.options));
   },
   register: function(name, options) {
+    console.log('======= register', name);
     if ( ! name ) {
       throw "Provide arguments for register";
     }
@@ -62,6 +64,7 @@ var service = {
   },
 
   ready: function(callback) {
+    console.log('======= ready');
     return new Promise(function(resolve, reject) {
       function broadcastReady() {
         this.options.available = true;
