@@ -80,11 +80,12 @@ var service = {
       } else {
         this.services_missing = services_missing;
         this.readyCallback = broadcastReady;
-        //console.log('services still missing', services_missing);
-        // need to wait for services to get registered
-        //this.callbacks.push();
       }
     }.bind(this));
+  },
+
+  get: function(key) {
+    return found_services[key];
   }
 };
 
