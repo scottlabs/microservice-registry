@@ -75,7 +75,7 @@ var service = {
           resolve();
         }
       }
-    });
+    }.bind(this));
   }
 };
 
