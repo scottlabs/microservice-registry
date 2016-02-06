@@ -67,6 +67,7 @@ var service = {
     console.log('======= ready');
     return new Promise(function(resolve, reject) {
       function broadcastReady() {
+        console.log('this', this);
         this.options.available = true;
         this.advertise();
         if ( callback ) {
