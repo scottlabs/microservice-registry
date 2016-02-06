@@ -63,24 +63,23 @@ var service = {
 
   ready: function(callback) {
     return new Promise(function(resolve, reject) {
+      function broadcastReady() {
+        this.advertise();
+        if ( callback ) {
+          callback();
+        }
+        resolve();
+      }
       // Iterate through the services we expect to be available
       var services_missing = Object.keys(this.expected_services).filter(function(key) {
         return !found_services[key] || !found_services[key].available;
       }.bind(this));
 
       if ( services_missing === 0 ) {
-        if ( callback ) {
-          callback();
-        }
-        resolve();
+        broadcastReady();
       } else {
         this.services_missing = services_missing;
-        this.readyCallback = function() {
-          if ( callback ) {
-            callback();
-          }
-          resolve();
-        }
+        this.readyCallback = broadcastReady;
         //console.log('services still missing', services_missing);
         // need to wait for services to get registered
         //this.callbacks.push();
