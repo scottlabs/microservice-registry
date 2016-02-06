@@ -12,16 +12,31 @@ discover.on('added', function(obj) {
   if ( obj && obj.advertisement ) {
     found_services[obj.advertisement.name] = obj.advertisement;
 
-    service.callbacks.map(function(callback, i) {
-      callback(obj.advertisement);
-      delete service.callbacks[i];
-    });
+    if ( service.services_missing.length ) {
+      service.services_missing.map(function(service_missing, i) {
+        if ( service_missing === obj.advertisement.name ) {
+          // Boom! we found it
+          service.services_missing.splice(i,i+1);
+        }
+      });
+
+      if ( service.services_missing.length === 0 ) {
+        service.readyCallback();
+      }
+    }
+
+    if ( service.callbacks[obj.advertisement.name] ) {
+      service.callbacks[obj.advertisement.name]();
+      delete service.callbacks[obj.advertisement.name];
+    }
   }
 });
 
 var service = {
-  services: {},
-  callbacks: [],
+  expected_services: {},
+  callbacks: {},
+  services_missing: [],
+  readyCallback: function() {},
   advertise: function() {
     discover.advertise(_.extend({ name: this.name }, this.options));
   },
@@ -34,48 +49,41 @@ var service = {
 
     this.options.services.map(function(service) {
       if ( service.name ) {
-        this.services[service] = _.extend({available: false}, service);
+        this.expected_services[service] = _.extend({available: false}, service);
       } else {
-        this.services[service] = {
+        this.expected_services[service] = {
           name: service,
           available: false
         };
       }
     }.bind(this));
 
-    discover.advertise();
+    this.advertise();
   },
 
   ready: function(callback) {
     return new Promise(function(resolve, reject) {
-      if ( this.services ) {
-        // Iterate through the services we expect to be available
-        var services_left = Object.keys(this.services).filter(function(key) {
-          return !this.services[key].available;
-        }.bind(this));
-        if ( services_left.length > 0 ) {
-          // need to wait for services to get registered
-          this.callbacks.push(services_left.map(function(service) {
-            return function(service) {
-              this.services[service.name] = service;
-              this.ready();
-            }.bind(this);
-          }.bind(this)));
+      // Iterate through the services we expect to be available
+      var services_missing = Object.keys(this.expected_services).filter(function(key) {
+        return !found_services[key] || !found_services[key].available;
+      }.bind(this));
 
-        } else {
+      if ( services_missing === 0 ) {
+        if ( callback ) {
+          callback();
+        }
+        resolve();
+      } else {
+        this.services_missing = services_missing;
+        this.readyCallback = function() {
           if ( callback ) {
             callback();
           }
           resolve();
         }
-      } else {
-        this.options.available = true;
-        discover.advertise(this.options);
-
-        if ( callback ) {
-          callback();
-        }
-        resolve();
+        //console.log('services still missing', services_missing);
+        // need to wait for services to get registered
+        //this.callbacks.push();
       }
     }.bind(this));
   }
