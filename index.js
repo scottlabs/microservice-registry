@@ -80,10 +80,14 @@ var service = {
       }.bind(this));
 
       if ( services_missing.length === 0 ) {
+        console.log('services missing, none!');
         broadcastReady();
       } else {
         this.services_missing = services_missing;
-        this.readyCallback = broadcastReady;
+        this.readyCallback = function() {
+          console.log('ready callback');
+          broadcastReady();
+        }
       }
     }.bind(this));
   },
