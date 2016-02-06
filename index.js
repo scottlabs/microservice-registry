@@ -64,6 +64,7 @@ var service = {
   ready: function(callback) {
     return new Promise(function(resolve, reject) {
       function broadcastReady() {
+        this.options.available = true;
         this.advertise();
         if ( callback ) {
           callback();
