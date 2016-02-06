@@ -4,6 +4,8 @@ For a project, I had a need to monitor multiple Node.js micro processes; specifi
 
 This project is pretty specific to my use case but feel free to fork. To use, every microservice should first register itself:
 
+## Set Up
+
 ```
 var service = require('microservice-registry');
 var name = 'foo';
@@ -40,3 +42,13 @@ service.ready(function() {
 ```
 
 That's it!
+
+## Retrieving a service
+
+To get a service, just call:
+
+```
+service.get('foo');
+```
+
+This will return any registered services that match that name.
