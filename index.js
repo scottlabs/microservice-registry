@@ -76,7 +76,7 @@ var service = {
         return !found_services[key] || !found_services[key].available;
       }.bind(this));
 
-      if ( services_missing === 0 ) {
+      if ( services_missing.length === 0 ) {
         broadcastReady();
       } else {
         this.services_missing = services_missing;
