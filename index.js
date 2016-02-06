@@ -39,7 +39,8 @@ var service = {
   options: {},
   readyCallback: function() {},
   advertise: function() {
-    discover.advertise(_.extend({ name: this.name }, this.options));
+    const broadcast_packet = _.extend({ name: this.name }, this.options);
+    discover.advertise(broadcast_packet);
   },
   register: function(name, options) {
     if ( ! name ) {
