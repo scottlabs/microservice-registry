@@ -3,7 +3,7 @@
 var Promise = require('bluebird');
 var discover = require('node-discover')();
 var _ = require('lodash');
-var zlib = require('zlib');
+var snappy = require('snappy');
 
 var found_services = {};
 
@@ -36,12 +36,7 @@ discover.on('added', function(obj) {
   if ( obj && obj.advertisement ) {
     let advertisement;
     //console.log('obj', obj);
-    if ( obj.advertisement.type === 'Buffer' ) {
-      //console.log('its a buffer', obj.advertisement);
-      advertisement = zlib.gunzipSync(obj.advertisement.data);
-    } else {
-      advertisement = obj.advertisement;
-    }
+    advertisement = snappy.uncompressSync(obj.advertisement);
     handleAdvertisement(advertisement);
   }
 });
@@ -53,9 +48,9 @@ var service = {
   options: {},
   readyCallback: function() {},
   advertise: function() {
-    const broadcast_packet = _.extend({ name: this.name }, this.options);
+    const broadcast_packet = JSON.stringify(_.extend({ name: this.name }, this.options));
 
-    const compressed_packet = zlib.gzipSync(JSON.stringify(broadcast_packet)).toString('utf8');
+    const compressed_packet = snappy.compressSync(broadcast_packet);
     if ( compressed_packet.length > 1218 ) {
       throw new Error("node-discover can only handle strings up to 1218 characters");
     }

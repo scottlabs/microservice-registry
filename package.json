@@ -11,6 +11,7 @@
   "dependencies": {
     "bluebird": "^3.2.2",
     "lodash": "^4.2.1",
-    "node-discover": "^0.4.0"
+    "node-discover": "^0.4.0",
+    "snappy": "^4.1.2"
   }
 }
