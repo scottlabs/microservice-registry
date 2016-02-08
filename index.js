@@ -7,32 +7,42 @@ var zlib = require('zlib');
 
 var found_services = {};
 
+var handleAdvertisement = function(advertisement) {
+  console.log('the advertisement', advertisement);
+  found_services[advertisement.name] = advertisement;
+
+  if ( service.services_missing.length ) {
+    service.services_missing.map(function(service_missing, i) {
+      if ( service_missing === advertisement.name ) {
+        // Boom! we found it
+        service.services_missing.splice(i,i+1);
+      }
+    });
+
+    if ( service.services_missing.length === 0 ) {
+      service.readyCallback();
+    }
+  }
+
+  if ( service.callbacks[advertisement.name] ) {
+    service.callbacks[advertisement.name]();
+    delete service.callbacks[advertisement.name];
+  }
+}
+
 discover.on('added', function(obj) {
   // sometimes random objects come through;
   // I don't know why
   if ( obj && obj.advertisement ) {
-    zlib.gunzip(obj.advertisement, function(error, advertisement) {
-      console.log('the advertisement', advertisement);
-      found_services[advertisement.name] = advertisement;
-
-      if ( service.services_missing.length ) {
-        service.services_missing.map(function(service_missing, i) {
-          if ( service_missing === advertisement.name ) {
-            // Boom! we found it
-            service.services_missing.splice(i,i+1);
-          }
-        });
-
-        if ( service.services_missing.length === 0 ) {
-          service.readyCallback();
-        }
-      }
-
-      if ( service.callbacks[advertisement.name] ) {
-        service.callbacks[advertisement.name]();
-        delete service.callbacks[advertisement.name];
-      }
-    });
+    let advertisement;
+    //console.log('obj', obj);
+    if ( obj.advertisement.type === 'Buffer' ) {
+      //console.log('its a buffer', obj.advertisement);
+      advertisement = zlib.gunzipSync(obj.advertisement.data);
+    } else {
+      advertisement = obj.advertisement;
+    }
+    handleAdvertisement(advertisement);
   }
 });
 
@@ -45,15 +55,11 @@ var service = {
   advertise: function() {
     const broadcast_packet = _.extend({ name: this.name }, this.options);
 
-    zlib.gzip(JSON.stringify(broadcast_packet), function(error, compressed_packet) {
-      if ( ! error ) {
-        if ( compressed_packet.length > 1218 ) {
-          throw new Error("node-discover can only handle strings up to 1218 characters");
-        }
-        console.log('compressed packet', compressed_packet);
-        discover.advertise(compressed_packet);
-      }
-    });
+    const compressed_packet = zlib.gzipSync(JSON.stringify(broadcast_packet)).toString('utf8');
+    if ( compressed_packet.length > 1218 ) {
+      throw new Error("node-discover can only handle strings up to 1218 characters");
+    }
+    discover.advertise(compressed_packet);
   },
   register: function(name, options) {
     if ( ! name ) {
