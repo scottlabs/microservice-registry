@@ -34,7 +34,7 @@ discover.on('added', function(obj) {
   if ( obj && obj.advertisement ) {
     let advertisement;
     //console.log('obj', obj);
-    advertisement = obj.advertisement;
+    advertisement = JSON.parse(obj.advertisement);
     handleAdvertisement(advertisement);
   }
 });
