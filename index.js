@@ -44,6 +44,9 @@ var service = {
 
     zlib.gzip(JSON.stringify(broadcast_packet), function(error, compressed_packet) {
       if ( ! error ) {
+        if ( compressed_packet.length > 1218 ) {
+          throw new Error("node-discover can only handle strings up to 1218 characters");
+        }
         console.log('compressed packet', compressed_packet);
         discover.advertise(compressed_packet);
       }
