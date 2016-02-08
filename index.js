@@ -3,7 +3,7 @@
 var Promise = require('bluebird');
 var discover = require('node-discover')();
 var _ = require('lodash');
-var lz = require('lz-string');
+var zlib = require('zlib');
 
 var found_services = {};
 
@@ -41,9 +41,13 @@ var service = {
   readyCallback: function() {},
   advertise: function() {
     const broadcast_packet = _.extend({ name: this.name }, this.options);
-    const compressed_packet = lz(JSON.stringify(broadcast_packet));
-    console.log('compressed packet', compressed_packet);
-    discover.advertise(compressed_packet);
+
+    zlib.gzip(JSON.stringify(broadcast_packet), function(error, compressed_packet) {
+      if ( ! error ) {
+        console.log('compressed packet', compressed_packet);
+        discover.advertise(compressed_packet);
+      }
+    });
   },
   register: function(name, options) {
     if ( ! name ) {
