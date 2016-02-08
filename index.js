@@ -7,7 +7,6 @@ var _ = require('lodash');
 var found_services = {};
 
 var handleAdvertisement = function(advertisement) {
-  console.log('the advertisement', advertisement);
   found_services[advertisement.name] = advertisement;
 
   if ( service.services_missing.length ) {
