@@ -3,7 +3,6 @@
 var Promise = require('bluebird');
 var discover = require('node-discover')();
 var _ = require('lodash');
-var snappy = require('snappy');
 
 var found_services = {};
 
@@ -36,7 +35,7 @@ discover.on('added', function(obj) {
   if ( obj && obj.advertisement ) {
     let advertisement;
     //console.log('obj', obj);
-    advertisement = snappy.uncompressSync(obj.advertisement);
+    advertisement = obj.advertisement;
     handleAdvertisement(advertisement);
   }
 });
@@ -50,11 +49,10 @@ var service = {
   advertise: function() {
     const broadcast_packet = JSON.stringify(_.extend({ name: this.name }, this.options));
 
-    const compressed_packet = snappy.compressSync(broadcast_packet);
-    if ( compressed_packet.length > 1218 ) {
+    if ( broadcast_packet.length > 1218 ) {
       throw new Error("node-discover can only handle strings up to 1218 characters");
     }
-    discover.advertise(compressed_packet);
+    discover.advertise(broadcast_packet);
   },
   register: function(name, options) {
     if ( ! name ) {
