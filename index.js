@@ -11,25 +11,28 @@ discover.on('added', function(obj) {
   // sometimes random objects come through;
   // I don't know why
   if ( obj && obj.advertisement ) {
-    found_services[obj.advertisement.name] = obj.advertisement;
+    zlib.gunzip(obj.advertisement, function(error, advertisement) {
+      console.log('the advertisement', advertisement);
+      found_services[advertisement.name] = advertisement;
 
-    if ( service.services_missing.length ) {
-      service.services_missing.map(function(service_missing, i) {
-        if ( service_missing === obj.advertisement.name ) {
-          // Boom! we found it
-          service.services_missing.splice(i,i+1);
+      if ( service.services_missing.length ) {
+        service.services_missing.map(function(service_missing, i) {
+          if ( service_missing === advertisement.name ) {
+            // Boom! we found it
+            service.services_missing.splice(i,i+1);
+          }
+        });
+
+        if ( service.services_missing.length === 0 ) {
+          service.readyCallback();
         }
-      });
-
-      if ( service.services_missing.length === 0 ) {
-        service.readyCallback();
       }
-    }
 
-    if ( service.callbacks[obj.advertisement.name] ) {
-      service.callbacks[obj.advertisement.name]();
-      delete service.callbacks[obj.advertisement.name];
-    }
+      if ( service.callbacks[advertisement.name] ) {
+        service.callbacks[advertisement.name]();
+        delete service.callbacks[advertisement.name];
+      }
+    });
   }
 });
 
