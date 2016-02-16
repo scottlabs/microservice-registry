@@ -3,6 +3,7 @@
 var Promise = require('bluebird');
 var discover = require('node-discover')();
 var _ = require('lodash');
+var zlib = require('zlib');
 
 var found_services = {};
 
@@ -46,12 +47,16 @@ var service = {
   options: {},
   readyCallback: function() {},
   advertise: function() {
-    const broadcast_packet = JSON.stringify(_.extend({ name: this.name }, this.options));
-
-    if ( broadcast_packet.length > 1218 ) {
-      throw new Error("node-discover can only handle strings up to 1218 characters");
-    }
-    discover.advertise(broadcast_packet);
+    var broadcast_packet = JSON.stringify(_.extend({ name: this.name }, this.options));
+    zlib.deflate(broadcast_packet, function(err, buffer) {
+      var compressed_packet = buffer.toString('base64');
+      
+      if ( compressed_packet.length > 1218 ) {
+        throw new Error("node-discover can only handle strings up to 1218 characters");
+      }
+      console.log(compressed_packet);
+      discover.advertise(compressed_packet);
+    });
   },
   register: function(name, options) {
     if ( ! name ) {
