@@ -33,10 +33,14 @@ discover.on('added', function(obj) {
   // sometimes random objects come through;
   // I don't know why
   if ( obj && obj.advertisement ) {
-    let advertisement;
+    var advertisement;
     //console.log('obj', obj);
-    advertisement = JSON.parse(obj.advertisement);
-    handleAdvertisement(advertisement);
+    var buffer_to_unzip = new Buffer(obj.advertisement, 'base64');
+    zlib.unzip(buffer_to_unzip, function(err, buffer) {
+      var unzipped_buffer = buffer.toString('base64');
+      advertisement = JSON.parse(unzipped_buffer);
+      handleAdvertisement(advertisement);
+    });
   }
 });
 
