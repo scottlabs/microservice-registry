@@ -35,7 +35,6 @@ discover.on('added', function(obj) {
   if ( obj && obj.advertisement ) {
     var advertisement;
     var unzipped_advertisement = lzw.decode(obj.advertisement);
-    console.log('unzipped', unzipped_advertisement);
     advertisement = JSON.parse(unzipped_advertisement);
     handleAdvertisement(advertisement);
   }
@@ -51,11 +50,11 @@ var service = {
     var broadcast_packet = JSON.stringify(_.extend({ name: this.name }, this.options));
 
     var compressed_packet = lzw.encode(broadcast_packet);
+    console.log('original string', broadcast_packet.length, 'compressed', compressed_packet.length);
 
     if ( compressed_packet.length > 1218 ) {
       throw new Error("node-discover can only handle strings up to 1218 characters");
     }
-    console.log('compressed', compressed_packet);
     discover.advertise(compressed_packet);
   },
   register: function(name, options) {
