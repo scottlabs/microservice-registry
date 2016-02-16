@@ -3,7 +3,7 @@
 var Promise = require('bluebird');
 var discover = require('node-discover')();
 var _ = require('lodash');
-var zlib = require('zlib');
+var lzw = require("node-lzw");
 
 var found_services = {};
 
@@ -34,13 +34,10 @@ discover.on('added', function(obj) {
   // I don't know why
   if ( obj && obj.advertisement ) {
     var advertisement;
-    //console.log('obj', obj);
-    var buffer_to_unzip = new Buffer(obj.advertisement, 'base64');
-    zlib.unzip(buffer_to_unzip, function(err, buffer) {
-      var unzipped_buffer = buffer.toString('base64');
-      advertisement = JSON.parse(unzipped_buffer);
-      handleAdvertisement(advertisement);
-    });
+    var unzipped_advertisement = lzw.decode(obj.advertisement);
+    console.log('unzipped', unzipped_advertisement);
+    advertisement = JSON.parse(unzipped_advertisement);
+    handleAdvertisement(advertisement);
   }
 });
 
@@ -52,15 +49,14 @@ var service = {
   readyCallback: function() {},
   advertise: function() {
     var broadcast_packet = JSON.stringify(_.extend({ name: this.name }, this.options));
-    zlib.deflate(broadcast_packet, function(err, buffer) {
-      var compressed_packet = buffer.toString('base64');
-      
-      if ( compressed_packet.length > 1218 ) {
-        throw new Error("node-discover can only handle strings up to 1218 characters");
-      }
-      console.log(compressed_packet);
-      discover.advertise(compressed_packet);
-    });
+
+    var compressed_packet = lzw.encode(broadcast_packet);
+
+    if ( compressed_packet.length > 1218 ) {
+      throw new Error("node-discover can only handle strings up to 1218 characters");
+    }
+    console.log('compressed', compressed_packet);
+    discover.advertise(compressed_packet);
   },
   register: function(name, options) {
     if ( ! name ) {
