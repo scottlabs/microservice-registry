@@ -50,7 +50,7 @@ var service = {
     var broadcast_packet = JSON.stringify(_.extend({ name: this.name }, this.options));
 
     var compressed_packet = lzw.encode(broadcast_packet);
-    console.log('original string', broadcast_packet.length, 'compressed', compressed_packet.length);
+    //console.log('original string', broadcast_packet.length, 'compressed', compressed_packet.length);
 
     if ( compressed_packet.length > 1218 ) {
       throw new Error("node-discover can only handle strings up to 1218 characters");
